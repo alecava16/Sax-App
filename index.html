@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tenor Sax Fingerings</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sax Fingers">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#EEF1F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10141B" media="(prefers-color-scheme: dark)">
+<style>
+/* Layout: note strip on top; note card + options beside a schematic key map (stacked on phones). Brass = pressed. */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --ink:#18202B; --muted:#5D6878; --line:#C9D0DA;
+  --brass:#B07D1E; --brass-soft:#F5E7C8; --on-brass:#1A1306; --bad:#C2413A; --good:#2F7D4F;
+  --display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --music:"Noto Music", "Bravura Text", "Segoe UI Symbol", serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10141B; --surface:#1A2029; --ink:#E9EDF2; --muted:#97A2B2; --line:#364050;
+    --brass:#E0AE4B; --brass-soft:#3A2F17; --on-brass:#1A1306; --bad:#F0736A; --good:#5BC98A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10141B; --surface:#1A2029; --ink:#E9EDF2; --muted:#97A2B2; --line:#364050;
+  --brass:#E0AE4B; --brass-soft:#3A2F17; --on-brass:#1A1306; --bad:#F0736A; --good:#5BC98A;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto;padding:16px 16px 40px;display:grid;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:10px}
+h1{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:-.01em;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{font:600 13px var(--body);border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+button:focus-visible,[tabindex]:focus-visible,select:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+/* note strip */
+.strip{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 10px 8px;scrollbar-width:thin}
+.strip-inner{display:flex;gap:14px;width:max-content}
+.group{display:grid;gap:6px}
+.group h3{margin:0 2px;font:600 11px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;gap:4px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:9px;min-width:44px;padding:5px 6px 4px;cursor:pointer;display:grid;justify-items:center;line-height:1.1}
+.chip b{font:600 14px var(--body)}
+.chip b sub{font-size:9px;font-weight:500;color:var(--muted)}
+.chip span{font-size:10.5px;color:var(--muted)}
+.chip[aria-current="true"]{background:var(--brass);border-color:var(--brass);color:var(--on-brass)}
+.chip[aria-current="true"] span,.chip[aria-current="true"] sub{color:var(--on-brass)}
+
+.main{display:grid;gap:14px;grid-template-columns:1fr}
+@media (min-width:820px){.main{grid-template-columns:1.05fr .95fr;align-items:start}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+.notehead{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:center}
+.staff{width:150px;height:auto;display:block}
+.names{display:grid;gap:2px;min-width:0}
+.big{font-family:var(--display);font-weight:700;font-size:40px;line-height:1;letter-spacing:-.02em}
+.big sub{font-size:18px;font-weight:500;color:var(--muted);margin-left:2px}
+.solf{font-size:20px;font-weight:500}
+.meta{color:var(--muted);font-size:13px}
+.pill{display:inline-block;font:600 11px var(--body);letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--brass-soft);color:var(--ink);width:max-content;margin-bottom:4px}
+.nav{display:flex;gap:8px;margin-top:12px}
+.nav button,.btn{font:600 14px var(--body);border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:9px 14px;border-radius:10px;cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.nav button{flex:1}
+.section-title{font:600 11px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{font:500 13px var(--body);border:1px solid var(--line);background:transparent;color:var(--ink);padding:6px 11px;border-radius:999px;cursor:pointer}
+.tabs button[aria-pressed="true"]{border-color:var(--brass);background:var(--brass-soft);font-weight:600}
+.hands{display:grid;gap:6px;margin-top:10px}
+.hand{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:baseline}
+.hand > span:first-child{font-size:12px;color:var(--muted);font-weight:600}
+.keylist{display:flex;flex-wrap:wrap;gap:4px}
+.k{font-size:12.5px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--brass-soft)}
+.k.none{background:transparent;color:var(--muted);font-weight:400;padding-left:0}
+.tip{margin:12px 0 0;font-size:13.5px;color:var(--muted);max-width:60ch}
+
+.diagram-card{display:grid;gap:10px}
+.diagram-wrap{display:flex;justify-content:center}
+svg.keys{width:100%;max-width:320px;height:auto;touch-action:manipulation}
+.key{cursor:pointer}
+.key .shape{fill:var(--surface);stroke:var(--muted);stroke-width:1.6;transition:fill .15s,stroke .15s}
+.key .lbl{font:600 9px var(--body);fill:var(--muted);pointer-events:none;text-anchor:middle;dominant-baseline:central}
+.key.big .lbl{font-size:12px}
+.key:hover .shape{stroke:var(--ink)}
+.key.on .shape{fill:var(--brass);stroke:var(--brass)}
+.key.on .lbl{fill:var(--on-brass)}
+.key.focus .shape{stroke:var(--ink);stroke-width:2.6}
+.key.missing .shape{stroke:var(--good);stroke-width:2.6;stroke-dasharray:4 3;fill:transparent}
+.key.extra .shape{fill:var(--bad);stroke:var(--bad)}
+.key.extra .lbl{fill:#fff}
+.key:focus{outline:none}
+.key:focus-visible .shape{stroke:var(--brass);stroke-width:3}
+.cap{font:600 10px var(--body);letter-spacing:.08em;fill:var(--muted);text-transform:uppercase}
+.divider{stroke:var(--line);stroke-width:1.2;stroke-dasharray:3 4}
+.legend{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-2px;margin-right:5px;border:1.6px solid var(--muted)}
+.legend i.on{background:var(--brass);border-color:var(--brass)}
+.legend i.miss{border:2px dashed var(--good)}
+.legend i.ex{background:var(--bad);border-color:var(--bad)}
+.info{border-top:1px solid var(--line);padding-top:10px;font-size:13.5px;min-height:56px}
+.info strong{font-weight:600}
+.info .used{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.info .used button{font:500 12px var(--body);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:2px 7px;cursor:pointer}
+
+.quizbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.quizbar select{font:500 13px var(--body);padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.score{margin-left:auto;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.verdict{margin:10px 0 0;font-weight:600;font-size:14px;min-height:21px}
+.verdict.ok{color:var(--good)} .verdict.no{color:var(--bad)}
+.play{display:inline-flex;align-items:center;gap:6px;width:max-content;margin-top:6px;font:600 13px var(--body);border:1px solid var(--brass);background:var(--brass-soft);color:var(--ink);padding:6px 12px 6px 10px;border-radius:999px;cursor:pointer}
+.play svg{width:12px;height:12px;fill:currentColor}
+.play.playing{background:var(--brass);color:var(--on-brass)}
+.strip{position:relative}
+.chip.dim{opacity:.3}
+.seg.small{width:max-content}
+.seg.small button{padding:6px 11px;font-size:12.5px;text-transform:none;letter-spacing:0}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px}
+.ctl{display:grid;gap:4px;align-content:start}
+.ctl > label,.ctl > span{font:600 11px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ctl select{font:500 14px var(--body);padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.scale-sum{margin-top:16px;display:grid;gap:6px}
+.scale-title{font-family:var(--display);font-weight:700;font-size:23px;line-height:1.1;text-wrap:balance}
+.pcs{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.pcs button{display:grid;justify-items:center;min-width:42px;padding:4px 6px;border-radius:8px;border:1px solid transparent;background:var(--brass-soft);color:var(--ink);line-height:1.15;cursor:pointer;font-family:var(--body)}
+.pcs button b{font-size:14px}.pcs button span{font-size:10.5px;color:var(--muted)}
+.pcs button.cur{border-color:var(--brass)}
+.staffwrap{overflow-x:auto;margin-top:10px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.staffwrap svg{display:block;height:auto}
+.scnote{cursor:pointer}
+.scnote:focus{outline:none}.scnote:focus-visible rect{stroke:var(--brass);stroke-width:1.5}
+.transport{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.transport .pos{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:74px;text-align:center}
+.transport .primary{margin-left:auto}
+.changes{display:grid;gap:6px;font-size:13.5px}
+.chg{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:baseline}
+.chg > span:first-child{font-size:12px;color:var(--muted);font-weight:600}
+.k.add{background:transparent;box-shadow:inset 0 0 0 2px var(--good)}
+.k.lift{background:transparent;box-shadow:inset 0 0 0 1.5px var(--bad);color:var(--bad)}
+.key.add .shape{stroke:var(--good);stroke-width:3.4}
+.key.lift .shape{fill:transparent;stroke:var(--bad);stroke-width:2.4;stroke-dasharray:4 3}
+.legend i.add{background:var(--brass);border:2.5px solid var(--good)}
+.legend i.lift{border:2px dashed var(--bad)}
+.hidden{display:none !important}
+footer{color:var(--muted);font-size:12px;max-width:70ch}
+@media (prefers-reduced-motion: reduce){*{transition:none !important}}
+@media (max-width:400px){.big{font-size:34px}.staff{width:124px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Tenor Sax Fingerings</h1>
+      <p class="sub">Written pitch, B♭3 to F♯6 plus altissimo G. Tap a note, walk through a scale, or quiz yourself.</p>
+    </div>
+    <div class="seg" role="group" aria-label="Mode">
+      <button id="mode-learn" aria-pressed="true">Chart</button>
+      <button id="mode-scale" aria-pressed="false">Scales</button>
+      <button id="mode-quiz" aria-pressed="false">Quiz me</button>
+    </div>
+  </header>
+
+  <nav class="strip" aria-label="Notes"><div class="strip-inner" id="strip"></div></nav>
+
+  <div class="main">
+    <section class="card" aria-live="polite">
+      <div class="notehead">
+        <svg class="staff" id="staff" viewBox="0 0 150 130" aria-hidden="true"></svg>
+        <div class="names">
+          <span class="pill" id="reg"></span>
+          <div class="big" id="big"></div>
+          <div class="solf" id="solf"></div>
+          <div class="meta" id="enh"></div>
+          <div class="meta" id="concert"></div>
+          <button class="play" id="play" aria-label="Play this note"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>Play</button>
+        </div>
+      </div>
+
+      <div id="learn-panel">
+        <div class="nav">
+          <button id="prev" aria-label="Previous note">← Lower</button>
+          <button id="next" aria-label="Next note">Higher →</button>
+        </div>
+        <div class="section-title">Fingering</div>
+        <div class="tabs" id="tabs"></div>
+        <div class="hands" id="hands"></div>
+        <p class="tip" id="tip"></p>
+      </div>
+
+      <div id="scale-panel" class="hidden">
+        <div class="controls">
+          <div class="ctl"><label for="sc-root" id="sc-root-lbl">Key (written)</label><select id="sc-root"></select></div>
+          <div class="ctl"><span>Key is</span><div class="seg small" role="group" aria-label="Key reference"><button id="sc-written" aria-pressed="true">Written</button><button id="sc-concert" aria-pressed="false">Concert</button></div></div>
+          <div class="ctl"><label for="sc-type">Scale</label><select id="sc-type"></select></div>
+          <div class="ctl"><label for="sc-range">Range</label><select id="sc-range"></select></div>
+          <div class="ctl"><label for="sc-dir">Direction</label><select id="sc-dir"><option value="updown">Up and down</option><option value="up">Up only</option></select></div>
+          <div class="ctl"><label for="sc-tempo">Tempo</label><select id="sc-tempo"><option value="60">60 bpm</option><option value="90">90 bpm</option><option value="120">120 bpm</option><option value="160">160 bpm</option></select></div>
+        </div>
+        <div class="scale-sum">
+          <div class="scale-title" id="sc-title"></div>
+          <div class="meta" id="sc-sub"></div>
+          <div class="pcs" id="sc-pcs"></div>
+          <p class="tip" id="sc-note" style="margin:2px 0 0"></p>
+        </div>
+        <div class="staffwrap"><svg id="sc-staff" aria-label="Scale on the staff"></svg></div>
+        <div class="transport">
+          <button class="btn" id="sc-prev" aria-label="Previous note in scale">←</button>
+          <span class="pos" id="sc-pos"></span>
+          <button class="btn" id="sc-next" aria-label="Next note in scale">→</button>
+          <button class="btn primary" id="sc-play">Play scale</button>
+        </div>
+        <div class="section-title">Finger changes</div>
+        <div class="changes" id="sc-changes"></div>
+        <div class="section-title">Fingering</div>
+        <div class="hands" id="sc-hands" style="margin-top:0"></div>
+        <p class="tip" id="sc-tip"></p>
+      </div>
+
+      <div id="quiz-panel" class="hidden">
+        <p class="tip" style="margin-top:14px">Press the keys for this note on the diagram, then check. Any listed alternate counts.</p>
+        <div class="quizbar">
+          <label for="pool" class="hidden">Range</label>
+          <select id="pool">
+            <option value="full">Full range B♭3–F♯6</option>
+            <option value="nopalm">B♭3–C♯6 (no palm keys)</option>
+            <option value="low">B♭3–C♯5 (no octave key)</option>
+          </select>
+          <span class="score" id="score">0 / 0</span>
+        </div>
+        <div class="quizbar">
+          <button class="btn primary" id="check">Check</button>
+          <button class="btn" id="clear">Clear</button>
+          <button class="btn" id="reveal">Show answer</button>
+          <button class="btn" id="newq">Next note</button>
+        </div>
+        <p class="verdict" id="verdict"></p>
+      </div>
+    </section>
+
+    <section class="card diagram-card">
+      <div class="diagram-wrap"><svg class="keys" id="keys" viewBox="0 0 280 580" role="group" aria-label="Saxophone key map"></svg></div>
+      <div class="legend" id="legend">
+        <span><i class="on"></i>Pressed</span><span><i></i>Open</span>
+        <span class="sonly hidden"><i class="add"></i>Press now</span><span class="sonly hidden"><i class="lift"></i>Lift</span>
+        <span class="qonly hidden"><i class="miss"></i>Missing</span><span class="qonly hidden"><i class="ex"></i>Not needed</span>
+      </div>
+      <div class="info" id="info"></div>
+    </section>
+  </div>
+
+  <footer>Schematic key map, not to scale. Tenor sax is a B♭ instrument and sounds a major ninth lower than written, so written C5 sounds as concert B♭3. Notation uses English letter names with Italian solfège. Play sounds the note at concert pitch, as a tenor really sounds, using a synthesised tone.</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- keys ---------- */
+const KEYS = {
+  oct:{name:"Octave key",finger:"Left thumb",short:"Octave",hand:"L"},
+  palmD:{name:"Palm D",finger:"Left index, knuckle",short:"Palm D",hand:"L"},
+  palmEb:{name:"Palm E♭",finger:"Left index, first joint",short:"Palm E♭",hand:"L"},
+  palmF:{name:"Palm F",finger:"Left middle, first joint",short:"Palm F",hand:"L"},
+  frontF:{name:"Front F",finger:"Left index, rocked up above the B key",short:"Front F",hand:"L"},
+  L1:{name:"B key (1)",finger:"Left index",short:"1",hand:"L"},
+  bis:{name:"Bis B♭",finger:"Left index, small key between 1 and 2",short:"Bis",hand:"L"},
+  L2:{name:"A key (2)",finger:"Left middle",short:"2",hand:"L"},
+  L3:{name:"G key (3)",finger:"Left ring",short:"3",hand:"L"},
+  gs:{name:"G♯ key",finger:"Left pinky",short:"G♯ pinky",hand:"L"},
+  lowCs:{name:"Low C♯",finger:"Left pinky",short:"C♯ pinky",hand:"L"},
+  lowB:{name:"Low B",finger:"Left pinky",short:"B pinky",hand:"L"},
+  lowBb:{name:"Low B♭",finger:"Left pinky",short:"B♭ pinky",hand:"L"},
+  sideE:{name:"Side E (high E)",finger:"Right index, side of the hand",short:"Side E",hand:"R"},
+  sideC:{name:"Side C",finger:"Right index, side of the hand",short:"Side C",hand:"R"},
+  sideBb:{name:"Side B♭",finger:"Right index, side of the hand",short:"Side B♭",hand:"R"},
+  highFs:{name:"High F♯ key",finger:"Right middle, side",short:"High F♯",hand:"R"},
+  R1:{name:"F key (1)",finger:"Right index",short:"1",hand:"R"},
+  R2:{name:"E key (2)",finger:"Right middle",short:"2",hand:"R"},
+  altFs:{name:"Alternate F♯",finger:"Right ring, small key beside 3",short:"Alt F♯",hand:"R"},
+  R3:{name:"D key (3)",finger:"Right ring",short:"3",hand:"R"},
+  lowEb:{name:"Low E♭",finger:"Right pinky",short:"E♭ pinky",hand:"R"},
+  lowC:{name:"Low C",finger:"Right pinky",short:"C pinky",hand:"R"}
+};
+const ORDER = Object.keys(KEYS);
+/* shapes: c=circle, e=ellipse, r=rect */
+const SHAPES = [
+  {id:"oct",t:"e",cx:38,cy:72,rx:16,ry:10,l:"Oct"},
+  {id:"palmEb",t:"e",cx:88,cy:58,rx:18,ry:8,rot:-12,l:"E♭"},
+  {id:"palmD",t:"e",cx:64,cy:94,rx:18,ry:8,rot:-48,l:"D"},
+  {id:"palmF",t:"e",cx:94,cy:126,rx:18,ry:8,rot:-72,l:"F"},
+  {id:"frontF",t:"e",cx:140,cy:104,rx:10,ry:6.5,l:"",lx:160,ly:104,ltxt:"Front F"},
+  {id:"L1",t:"c",cx:140,cy:140,r:19,l:"B",big:1},
+  {id:"bis",t:"c",cx:140,cy:170,r:6.5,l:"",lx:164,ly:170,ltxt:"bis"},
+  {id:"L2",t:"c",cx:140,cy:200,r:19,l:"A",big:1},
+  {id:"L3",t:"c",cx:140,cy:250,r:19,l:"G",big:1},
+  {id:"gs",t:"r",x:182,y:236,w:46,h:16,l:"G♯"},
+  {id:"lowCs",t:"r",x:182,y:256,w:22,h:26,l:"C♯"},
+  {id:"lowB",t:"r",x:206,y:256,w:22,h:26,l:"B"},
+  {id:"lowBb",t:"r",x:182,y:286,w:46,h:16,l:"B♭"},
+  {id:"sideE",t:"r",x:74,y:340,w:16,h:30,l:"E"},
+  {id:"sideC",t:"r",x:74,y:375,w:16,h:30,l:"C"},
+  {id:"sideBb",t:"r",x:74,y:410,w:16,h:30,l:"B♭"},
+  {id:"highFs",t:"r",x:74,y:450,w:16,h:26,l:"F♯"},
+  {id:"R1",t:"c",cx:140,cy:362,r:19,l:"F",big:1},
+  {id:"R2",t:"c",cx:140,cy:412,r:19,l:"E",big:1},
+  {id:"altFs",t:"e",cx:180,cy:440,rx:10,ry:6.5,l:"",lx:204,ly:440,ltxt:"alt F♯"},
+  {id:"R3",t:"c",cx:140,cy:468,r:19,l:"D",big:1},
+  {id:"lowEb",t:"r",x:180,y:502,w:44,h:16,l:"E♭"},
+  {id:"lowC",t:"r",x:180,y:522,w:44,h:24,l:"C"}
+];
+
+/* ---------- notes ---------- */
+const L123=["L1","L2","L3"], R123=["R1","R2","R3"];
+const LOW = {
+  58:[{f:[...L123,"lowBb",...R123],tip:"Lowest note on the horn. Relax the jaw, open the throat and use plenty of slow air."}],
+  59:[{f:[...L123,"lowB",...R123],tip:"Keep the left pinky rolling smoothly between the low keys."}],
+  60:[{f:[...L123,...R123,"lowC"]}],
+  61:[{f:[...L123,"lowCs",...R123]}],
+  62:[{f:[...L123,...R123]}],
+  63:[{f:[...L123,...R123,"lowEb"]}],
+  64:[{f:[...L123,"R1","R2"]}],
+  65:[{f:[...L123,"R1"]}],
+  66:[{f:[...L123,"R2"]},{name:"Alternate F♯",f:[...L123,"R1","altFs"],tip:"Smoother for F–F♯ trills and quick F to F♯ moves."}],
+  67:[{f:[...L123]}],
+  68:[{f:[...L123,"gs"]}],
+  69:[{f:["L1","L2"]}],
+  70:[{name:"Bis",f:["L1","bis"],tip:"The index finger covers the B key and the small bis key together. Best when no B♮ is nearby."},
+      {name:"Side",f:["L1","sideBb"],tip:"Good for chromatic passages and B–B♭ trills."},
+      {name:"1 & 1",f:["L1","R1"],tip:"Left index plus right index. Common in flat keys."}],
+  71:[{f:["L1"]}],
+  72:[{f:["L2"]},{name:"Side C",f:["L1","sideC"],tip:"Useful for B–C trills and fast B to C moves."}],
+  73:[{f:[],tip:"No keys pressed. Open C♯ can sound thin, so keep the air steady."}]
+};
+const FING = {};
+for (const m in LOW) FING[m] = LOW[m];
+for (let m=74;m<=85;m++){
+  FING[m] = LOW[m-12].map(o=>({name:o.name,f:["oct",...o.f],tip:o.tip&&!/Lowest|pinky rolling/.test(o.tip)?o.tip:undefined}));
+}
+FING[74][0].tip="First note with the octave key. Keep the thumb resting on it rather than lifting off.";
+FING[85][0].tip="Octave key only. Like middle C♯, it can be a little unstable, so support the air.";
+FING[86]=[{f:["oct","palmD"],tip:"First palm-key note. Press with the side of the left index, not the fingertip."}];
+FING[87]=[{f:["oct","palmD","palmEb"]}];
+FING[88]=[{f:["oct","palmD","palmEb","sideE"]}];
+FING[89]=[{f:["oct","palmD","palmEb","palmF","sideE"]},
+          {name:"Front F",f:["oct","frontF","L1"],tip:"Rock the left index up onto the front F key while the B key stays down. Smooth from C and a common doorway to altissimo."}];
+FING[90]=[{f:["oct","palmD","palmEb","palmF","sideE","highFs"],tip:"Uses the high F♯ key, found on most modern tenors."},
+          {name:"Fork",f:["oct","L1","L2","highFs"],tip:"High A fingering plus the high F♯ key. Quick and easy."},
+          {name:"No F♯ key",f:["oct","frontF","L1","sideBb"],tip:"Front F fingering plus side B♭, for horns without a high F♯ key."}];
+FING[91]=[{f:["oct","L1","sideBb","highFs"],tip:"Altissimo, beyond the normal range. Needs the high F♯ key and firm air support."}];
+
+const WRIT = ["C","C♯","D","E♭","E","F","F♯","G","G♯","A","B♭","B"];
+const SOLF = ["do","do♯","re","mi♭","mi","fa","fa♯","sol","sol♯","la","si♭","si"];
+const ENH  = {1:["D♭","re♭"],3:["D♯","re♯"],6:["G♭","sol♭"],8:["A♭","la♭"],10:["A♯","la♯"]};
+const CONC = ["C","D♭","D","E♭","E","F","G♭","G","A♭","A","B♭","B"];
+const CSOL = ["do","re♭","re","mi♭","mi","fa","sol♭","sol","la♭","la","si♭","si"];
+const LETTER = [0,0,1,2,2,3,3,4,4,5,6,6];
+const ACC = {1:"♯",3:"♭",6:"♯",8:"♯",10:"♭"};
+const NOTES = Object.keys(FING).map(Number).sort((a,b)=>a-b);
+const LETTERS="CDEFGAB", NAT=[0,2,4,5,7,9,11], SOLFL=["do","re","mi","fa","sol","la","si"];
+const ACCS={"-2":"𝄫","-1":"♭","0":"","1":"♯","2":"𝄪"};
+const accStr=a=>ACCS[a]||"";
+const norm=a=>((a%12)+18)%12-6;
+const pcOf=r=>(NAT[r.l]+r.a+12)%12;
+const spName=r=>LETTERS[r.l]+accStr(r.a);
+const mk=(l,a,midi)=>({l,a,midi,o:Math.floor((midi-a)/12)-1});
+const oct = m => Math.floor(m/12)-1;
+const nm = m => WRIT[m%12]+oct(m);
+function register(m){ if(m<=73) return "Low register"; if(m<=85) return "Octave key"; if(m<=90) return "Palm keys"; return "Altissimo"; }
+
+/* ---------- state ---------- */
+let cur = 72, alt = 0, mode = "learn", focusKey = null;
+let quiz = {note:null, sel:new Set(), checked:false, right:0, total:0};
+try{ const s = parseInt(localStorage.getItem("tsf-note"),10); if(FING[s]) cur = s; }catch(e){}
+
+const $ = id => document.getElementById(id);
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent){ const n=document.createElementNS(SVGNS,tag); for(const k in attrs) n.setAttribute(k,attrs[k]); if(parent) parent.appendChild(n); return n; }
+
+/* ---------- strip ---------- */
+const GROUPS = [["Low register",58,73],["With octave key",74,85],["Palm keys",86,90],["Altissimo",91,91]];
+function buildStrip(){
+  const s=$("strip");
+  GROUPS.forEach(([title,a,b])=>{
+    const g=document.createElement("div"); g.className="group";
+    g.innerHTML=`<h3>${title}</h3>`;
+    const c=document.createElement("div"); c.className="chips";
+    for(let m=a;m<=b;m++){
+      const btn=document.createElement("button"); btn.className="chip"; btn.dataset.m=m;
+      btn.innerHTML=`<b>${WRIT[m%12]}<sub>${oct(m)}</sub></b><span>${SOLF[m%12]}</span>`;
+      btn.setAttribute("aria-label", `${nm(m)}, ${SOLF[m%12]}`);
+      btn.addEventListener("click",()=>chipClick(m));
+      c.appendChild(btn);
+    }
+    g.appendChild(c); s.appendChild(g);
+  });
+}
+
+/* ---------- staff ---------- */
+function drawNote(parent,x,step,acc,color,stem,accDx){
+  const y = 95 - (step-30)*5;
+  if(step<=28) el("line",{x1:x-11,x2:x+11,y1:105,y2:105,stroke:color,"stroke-width":1.2},parent);
+  for(const [st,ly] of [[40,45],[42,35],[44,25],[46,15]]) if(step>=st) el("line",{x1:x-11,x2:x+11,y1:ly,y2:ly,stroke:color,"stroke-width":1.2},parent);
+  el("ellipse",{cx:x,cy:y,rx:6.6,ry:4.7,fill:color,transform:`rotate(-20 ${x} ${y})`},parent);
+  if(stem){
+    if(step>=34) el("line",{x1:x-6,x2:x-6,y1:y+1,y2:y+34,stroke:color,"stroke-width":1.3},parent);
+    else el("line",{x1:x+6,x2:x+6,y1:y-1,y2:y-34,stroke:color,"stroke-width":1.3},parent);
+  }
+  if(acc){ const dy={"♭":3,"𝄫":3,"♯":6,"𝄪":3}[acc]||5; const a=el("text",{x:x+accDx,y:y+dy,"font-size":acc==="𝄪"?"16":"20",fill:color,"font-family":"var(--music)","text-anchor":"middle"},parent); a.textContent=acc; }
+}
+function staffBase(s,w){
+  for(let i=0;i<5;i++) el("line",{x1:4,x2:w-4,y1:55+i*10,y2:55+i*10,stroke:"var(--muted)","stroke-width":1},s);
+  const clef=el("text",{x:6,y:96,"font-size":"66",fill:"var(--ink)","font-family":"var(--music)"},s); clef.textContent="𝄞";
+}
+function drawStaff(m, sp){
+  const s=$("staff"); s.innerHTML="";
+  staffBase(s,150);
+  const step = sp ? sp.o*7+sp.l : oct(m)*7 + LETTER[m%12];
+  const acc = sp ? accStr(sp.a) : (ACC[m%12]||"");
+  drawNote(s,104,step,acc,"var(--ink)",true,-21);
+}
+
+/* ---------- key map ---------- */
+const keyNodes = {};
+function buildKeys(){
+  const s=$("keys");
+  el("text",{x:262,y:26,class:"cap","text-anchor":"end"},s).textContent="Left hand";
+  el("text",{x:262,y:330,class:"cap","text-anchor":"end"},s).textContent="Right hand";
+  el("line",{x1:20,x2:260,y1:312,y2:312,class:"divider"},s);
+  el("line",{x1:140,x2:140,y1:118,y2:490,stroke:"var(--line)","stroke-width":2},s).style.opacity=".55";
+  SHAPES.forEach(sh=>{
+    const g=el("g",{class:"key"+(sh.big?" big":""),tabindex:0,role:"button","data-k":sh.id,"aria-label":KEYS[sh.id].name},s);
+    let lx,ly;
+    if(sh.t==="c"){ el("circle",{cx:sh.cx,cy:sh.cy,r:sh.r,class:"shape"},g); lx=sh.cx; ly=sh.cy; }
+    else if(sh.t==="e"){ el("ellipse",{cx:sh.cx,cy:sh.cy,rx:sh.rx,ry:sh.ry,class:"shape",transform:sh.rot?`rotate(${sh.rot} ${sh.cx} ${sh.cy})`:""},g); lx=sh.cx; ly=sh.cy; }
+    else { el("rect",{x:sh.x,y:sh.y,width:sh.w,height:sh.h,rx:Math.min(8,sh.w/2),class:"shape"},g); lx=sh.x+sh.w/2; ly=sh.y+sh.h/2; }
+    // invisible hit area for small keys
+    if((sh.r&&sh.r<10)||(sh.ry&&sh.ry<7)) el("circle",{cx:lx,cy:ly,r:14,fill:"transparent"},g);
+    if(sh.l) el("text",{x:lx,y:ly,class:"lbl"},g).textContent=sh.l;
+    if(sh.ltxt){ const t=el("text",{x:sh.lx,y:sh.ly,class:"lbl"},g); t.textContent=sh.ltxt; t.style.textAnchor="start"; }
+    const ttl=el("title",{},g); ttl.textContent=KEYS[sh.id].name;
+    g.addEventListener("click",()=>keyTap(sh.id));
+    g.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); keyTap(sh.id);} });
+    keyNodes[sh.id]=g;
+  });
+  // side labels
+  el("text",{x:58,y:395,class:"lbl",style:"font:600 9px var(--body);fill:var(--muted)","text-anchor":"middle",transform:"rotate(-90 58 395)"},s).textContent="side keys";
+  el("text",{x:205,y:226,class:"lbl",style:"font:600 9px var(--body);fill:var(--muted)","text-anchor":"middle"},s).textContent="pinky";
+  el("text",{x:202,y:560,class:"lbl",style:"font:600 9px var(--body);fill:var(--muted)","text-anchor":"middle"},s).textContent="pinky";
+  el("text",{x:40,y:36,class:"lbl",style:"font:600 9px var(--body);fill:var(--muted)","text-anchor":"middle"},s).textContent="palm keys";
+}
+function paint(onSet, extra, diff){
+  ORDER.forEach(k=>{
+    const n=keyNodes[k]; if(!n) return;
+    n.classList.toggle("on", onSet.has(k));
+    n.classList.toggle("focus", focusKey===k && mode!=="quiz");
+    n.classList.toggle("add", !!(diff && diff.add.has(k)));
+    n.classList.toggle("lift", !!(diff && diff.lift.has(k)));
+    n.classList.toggle("missing", !!(extra && extra.missing.has(k)));
+    n.classList.toggle("extra", !!(extra && extra.extra.has(k)));
+  });
+}
+
+/* ---------- views ---------- */
+function showNames(m, sp){
+  const name = sp?spName(sp):WRIT[m%12], o = sp?sp.o:oct(m), solf = sp?SOLFL[sp.l]+accStr(sp.a):SOLF[m%12];
+  $("reg").textContent = register(m);
+  $("big").innerHTML = `${name}<sub>${o}</sub>`;
+  $("solf").textContent = solf;
+  const alts=[[WRIT[m%12],SOLF[m%12]]]; if(ENH[m%12]) alts.push(ENH[m%12]);
+  const others=alts.filter(a=>a[0]!==name);
+  $("enh").textContent = others.length ? "Also written "+others.map(a=>`${a[0]}${oct(m)} · ${a[1]}`).join(", ") : "";
+  if(sp){
+    const cl=(sp.l+6)%7, ca=norm(pcOf(sp)-2-NAT[cl]), c=mk(cl,ca,m-14);
+    $("concert").textContent = `Sounds as concert ${spName(c)}${c.o} · ${SOLFL[cl]+accStr(ca)}`;
+  } else {
+    const c = m-14;
+    $("concert").textContent = `Sounds as concert ${CONC[c%12]}${oct(c)} · ${CSOL[c%12]}`;
+  }
+  drawStaff(m, sp);
+}
+function handsHTML(f){
+  const row = (hand,label)=>{
+    const ks = ORDER.filter(k=>KEYS[k].hand===hand && f.includes(k));
+    return `<div class="hand"><span>${label}</span><div class="keylist">${ks.length?ks.map(k=>`<span class="k">${KEYS[k].short}</span>`).join(""):'<span class="k none">nothing pressed</span>'}</div></div>`;
+  };
+  return row("L","Left")+row("R","Right");
+}
+function renderLearn(){
+  const opts = FING[cur];
+  if(alt>=opts.length) alt=0;
+  showNames(cur);
+  const tabs=$("tabs"); tabs.innerHTML="";
+  opts.forEach((o,i)=>{
+    const b=document.createElement("button"); b.textContent=o.name||"Standard"; b.setAttribute("aria-pressed", i===alt);
+    b.addEventListener("click",()=>{alt=i;renderLearn();}); tabs.appendChild(b);
+  });
+  tabs.classList.toggle("hidden", opts.length<2);
+  const f = opts[alt].f;
+  $("hands").innerHTML = handsHTML(f);
+  $("tip").textContent = opts[alt].tip || "";
+  $("tip").classList.toggle("hidden", !opts[alt].tip);
+  paint(new Set(f));
+  document.querySelectorAll(".chip").forEach(c=>{c.setAttribute("aria-current", +c.dataset.m===cur); c.classList.remove("dim");});
+  $("prev").disabled = cur===NOTES[0]; $("next").disabled = cur===NOTES[NOTES.length-1];
+  renderInfo();
+}
+function renderInfo(){
+  const box=$("info");
+  if(mode==="quiz"){ box.innerHTML='<span class="meta">Tap keys to press or release them.</span>'; return; }
+  if(!focusKey){ box.innerHTML='<span class="meta">Tap any key on the diagram to see its name and every note that uses it.</span>'; return; }
+  const K=KEYS[focusKey], used=[];
+  NOTES.forEach(m=>FING[m].forEach((o,i)=>{ if(o.f.includes(focusKey)) used.push({m,i,label:nm(m)+(o.name?` (${o.name})`:"")}); }));
+  box.innerHTML = `<strong>${K.name}</strong> <span class="meta">· ${K.finger}</span><div class="used"></div>`;
+  const u=box.querySelector(".used");
+  if(!used.length) u.innerHTML='<span class="meta">Not used in the standard fingerings here.</span>';
+  used.forEach(x=>{ const b=document.createElement("button"); b.textContent=x.label; b.addEventListener("click",()=>{ if(mode!=="learn") setMode("learn"); cur=x.m;alt=x.i;save();renderLearn();}); u.appendChild(b); });
+}
+function save(){ try{localStorage.setItem("tsf-note",cur);}catch(e){} }
+function scrollChip(m){
+  const chip=document.querySelector(`.chip[data-m="${m}"]`), strip=document.querySelector("nav.strip");
+  if(!chip) return;
+  const l=chip.offsetLeft, r=l+chip.offsetWidth;
+  if(l<strip.scrollLeft+8 || r>strip.scrollLeft+strip.clientWidth-8) strip.scrollLeft = l - strip.clientWidth/2 + chip.offsetWidth/2;
+}
+function select(m){ cur=m; alt=0; save(); renderLearn(); scrollChip(m); }
+
+/* ---------- quiz ---------- */
+function pool(){ const v=$("pool").value; return NOTES.filter(m=> v==="low"? m<=73 : v==="nopalm"? m<=85 : m<=90); }
+function newQuestion(){
+  const p=pool(); let m;
+  do{ m=p[Math.floor(Math.random()*p.length)]; } while(p.length>1 && m===quiz.note);
+  quiz.note=m; quiz.sel=new Set(); quiz.checked=false;
+  $("verdict").textContent=""; $("verdict").className="verdict";
+  renderQuiz();
+}
+function renderQuiz(extra){
+  showNames(quiz.note);
+  document.querySelectorAll(".chip").forEach(c=>{c.setAttribute("aria-current", false); c.classList.remove("dim");});
+  paint(quiz.sel, extra);
+  $("score").textContent=`${quiz.right} / ${quiz.total} correct`;
+  renderInfo();
+}
+function closest(sel){
+  let best=null,bd=1e9;
+  FING[quiz.note].forEach(o=>{ const s=new Set(o.f); let d=0; s.forEach(k=>{if(!sel.has(k))d++;}); sel.forEach(k=>{if(!s.has(k))d++;}); if(d<bd){bd=d;best=o;} });
+  return {o:best,d:bd};
+}
+function check(){
+  if(quiz.checked) return;
+  const {o,d}=closest(quiz.sel); quiz.checked=true; quiz.total++;
+  const v=$("verdict");
+  if(d===0){ quiz.right++; v.textContent=`Correct${o.name?` (${o.name} fingering)`:""}. Tap Next note to keep going.`; v.className="verdict ok"; renderQuiz(); }
+  else {
+    const want=new Set(o.f), missing=new Set([...want].filter(k=>!quiz.sel.has(k))), extra=new Set([...quiz.sel].filter(k=>!want.has(k)));
+    v.textContent = `Not quite. ${missing.size?`Missing: ${[...missing].map(k=>KEYS[k].name).join(", ")}. `:""}${extra.size?`Not needed: ${[...extra].map(k=>KEYS[k].name).join(", ")}.`:""}`;
+    v.className="verdict no";
+    renderQuiz({missing,extra});
+  }
+}
+function reveal(){
+  const o=FING[quiz.note][0];
+  if(!quiz.checked){ quiz.checked=true; quiz.total++; }
+  quiz.sel=new Set(o.f);
+  $("verdict").textContent = o.f.length ? "Here's the standard fingering." : "Open note: no keys pressed.";
+  $("verdict").className="verdict";
+  renderQuiz();
+}
+
+/* ---------- sound ---------- */
+let actx=null, playTimer=null;
+function playNote(m, dur){
+  try{
+    if(!actx){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return; actx=new AC(); }
+    if(actx.state==="suspended") actx.resume();
+    const f0 = 440*Math.pow(2,(m-14-69)/12);   // concert pitch: a major ninth below written
+    dur = dur || 1.4;
+    const t = actx.currentTime + 0.02;
+    const at=Math.min(0.06,dur*0.15), dc=Math.min(0.25,dur*0.4), rl=Math.min(0.25,dur*0.3);
+    const out = actx.createGain(); out.gain.setValueAtTime(0.0001,t);
+    out.gain.exponentialRampToValueAtTime(0.32,t+at);
+    out.gain.exponentialRampToValueAtTime(0.24,t+dc);
+    out.gain.setValueAtTime(0.24,t+dur-rl);
+    out.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    const lp = actx.createBiquadFilter(); lp.type="lowpass"; lp.Q.value=2.2;
+    lp.frequency.setValueAtTime(Math.min(f0*2,9000),t);
+    lp.frequency.linearRampToValueAtTime(Math.min(f0*5.5,9000),t+0.12);
+    const body = actx.createBiquadFilter(); body.type="peaking"; body.frequency.value=1100; body.Q.value=1.1; body.gain.value=5;
+    lp.connect(body); body.connect(out); out.connect(actx.destination);
+    const vib = actx.createOscillator(); vib.frequency.value=5.2;
+    const vibAmt = actx.createGain(); vibAmt.gain.setValueAtTime(0,t); vibAmt.gain.linearRampToValueAtTime(f0*0.006,t+0.6);
+    vib.connect(vibAmt);
+    [["sawtooth",1,0],["square",0.35,4],["sine",0.5,-3]].forEach(([type,g,det])=>{
+      const o=actx.createOscillator(); o.type=type; o.frequency.value=f0; o.detune.value=det;
+      vibAmt.connect(o.frequency);
+      const og=actx.createGain(); og.gain.value=g*0.5; o.connect(og); og.connect(lp);
+      o.start(t); o.stop(t+dur+0.05);
+    });
+    // a little breath at the attack
+    const n=actx.createBuffer(1,actx.sampleRate*0.15,actx.sampleRate), d=n.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
+    const ns=actx.createBufferSource(); ns.buffer=n; const nf=actx.createBiquadFilter(); nf.type="bandpass"; nf.frequency.value=2500; nf.Q.value=0.8;
+    const ng=actx.createGain(); ng.gain.value=0.05; ns.connect(nf); nf.connect(ng); ng.connect(actx.destination); ns.start(t);
+    vib.start(t); vib.stop(t+dur+0.05);
+    const btn=$("play"); btn.classList.add("playing"); clearTimeout(playTimer);
+    playTimer=setTimeout(()=>btn.classList.remove("playing"), dur*1000);
+  }catch(e){}
+}
+$("play").addEventListener("click",()=>playNote(mode==="quiz"?quiz.note : mode==="scale"?steps[si].midi : cur));
+
+/* ---------- scales ---------- */
+let sc={root:0,keyAs:"written",type:"major",dir:"updown",tempo:"90",range:null};
+try{ Object.assign(sc, JSON.parse(localStorage.getItem("tsf-scale")||"{}")); sc.range=null; }catch(e){}
+let steps=[], ascList=[], si=0, scPlaying=null;
+const ROOTS=[[0,0],[0,1],[1,-1],[1,0],[2,-1],[2,0],[3,0],[3,1],[4,-1],[4,0],[5,-1],[5,0],[6,-1],[6,0]].map(([l,a])=>({l,a}));
+const shift=(r,dl,ds)=>{ const l=(r.l+dl+7)%7; return {l,a:norm(pcOf(r)+ds-NAT[l])}; };
+const MAJ=[[0,0],[1,2],[2,4],[3,5],[4,7],[5,9],[6,11]], NMIN=[[0,0],[1,2],[2,3],[3,5],[4,7],[5,8],[6,10]];
+const SCALES={
+  major:{n:"major",deg:MAJ},
+  natmin:{n:"natural minor",deg:NMIN},
+  harmin:{n:"harmonic minor",deg:[[0,0],[1,2],[2,3],[3,5],[4,7],[5,8],[6,11]]},
+  melmin:{n:"melodic minor",deg:[[0,0],[1,2],[2,3],[3,5],[4,7],[5,9],[6,11]],desc:NMIN,note:"Going down, melodic minor uses the natural minor notes."},
+  dorian:{n:"Dorian",deg:[[0,0],[1,2],[2,3],[3,5],[4,7],[5,9],[6,10]]},
+  mixo:{n:"Mixolydian",deg:[[0,0],[1,2],[2,4],[3,5],[4,7],[5,9],[6,10]]},
+  majpent:{n:"major pentatonic",deg:[[0,0],[1,2],[2,4],[4,7],[5,9]]},
+  minpent:{n:"minor pentatonic",deg:[[0,0],[2,3],[3,5],[4,7],[6,10]]},
+  blues:{n:"blues",deg:[[0,0],[2,3],[3,5],[4,6],[4,7],[6,10]],note:"The ♭5 between the 4th and 5th is the blue note."},
+  chrom:{n:"chromatic",chrom:true,note:"Written with sharps going up and flats coming down."}
+};
+const SHARPSP=[[0,0],[0,1],[1,0],[1,1],[2,0],[3,0],[3,1],[4,0],[4,1],[5,0],[5,1],[6,0]];
+const FLATSP=[[0,0],[1,-1],[1,0],[2,-1],[2,0],[3,0],[4,-1],[4,0],[5,-1],[5,0],[6,-1],[6,0]];
+const pickedWritten=()=>{ const r=ROOTS[sc.root]; return sc.keyAs==="written"? r : shift(r,1,2); };
+/* If the chosen spelling needs double flats/sharps and the enharmonic key is simpler, use that instead */
+function chooseRoot(){
+  const r=pickedWritten(), def=SCALES[sc.type];
+  if(def.chrom || r.a===0) return {r, swapped:false};
+  const alt = r.a>0 ? shift(r,1,0) : shift(r,-1,0);
+  const cost=root=>{ let sum=0, dbl=false; for(const [d,s2] of def.deg){ const l=(root.l+d)%7, a=norm(pcOf(root)+s2-NAT[l]); sum+=Math.abs(a); if(Math.abs(a)>=2) dbl=true; } return {sum,dbl}; };
+  const c1=cost(r), c2=cost(alt);
+  if(c1.dbl && Math.abs(alt.a)<2 && c2.sum<c1.sum) return {r:alt, swapped:true, from:r};
+  return {r, swapped:false};
+}
+const writtenRoot=()=>chooseRoot().r;
+const concertRoot=()=>shift(writtenRoot(),-1,-2);
+const concName=r=> (Math.abs(r.a)===2 || (r.a===1&&(r.l===2||r.l===6)) || (r.a===-1&&(r.l===3||r.l===0))) ? CONC[pcOf(r)] : spName(r);
+const cap=t=>t.charAt(0).toUpperCase()+t.slice(1);
+const keyLabel=k=>/^[LR][123]$/.test(k)? (k[0]==="L"?"Left ":"Right ")+k[1] : KEYS[k].short;
+
+function rangeOptions(){
+  const wr=writtenRoot(), rpc=pcOf(wr), opts=[];
+  for(let m=58;m<=90;m++) if(m%12===rpc){
+    const lbl=spName(wr)+mk(wr.l,wr.a,m).o;
+    if(m+12<=90) opts.push({v:"1:"+m,t:`1 octave from ${lbl}`,m});
+    if(m+24<=90) opts.push({v:"2:"+m,t:`2 octaves from ${lbl}`,m});
+  }
+  opts.push({v:"full",t:"Whole horn"});
+  return opts;
+}
+function collect(deg, lo, hi, base, sharps){
+  const wr=writtenRoot(), rpc=pcOf(wr), out=[];
+  if(!deg){
+    for(let m=lo;m<=hi;m++){
+      if((((m-base)%12)+12)%12===0){ out.push(mk(wr.l,wr.a,m)); continue; }
+      const [l,a]=(sharps?SHARPSP:FLATSP)[m%12]; out.push(mk(l,a,m));
+    }
+    return out;
+  }
+  for(let k=0;k<6;k++) for(const [d,s2] of deg){
+    const m=base+s2+12*k; if(m<lo||m>hi) continue;
+    const l=(wr.l+d)%7; out.push(mk(l,norm(rpc+s2-NAT[l]),m));
+  }
+  return out.sort((a,b)=>a.midi-b.midi);
+}
+function buildSteps(){
+  const def=SCALES[sc.type], opts=rangeOptions();
+  if(!sc.range || !opts.some(o=>o.v===sc.range)){
+    const o=opts.find(o=>o.v.startsWith("1:")&&o.m>=60)||opts.find(o=>o.v.startsWith("1:"))||opts[opts.length-1];
+    sc.range=o.v;
+  }
+  let lo,hi,base;
+  if(sc.range==="full"){ const rpc=pcOf(writtenRoot()); lo=58; hi=90; base=58+(((rpc-58)%12)+12)%12-12; }
+  else { const [k,m]=sc.range.split(":").map(Number); lo=m; hi=m+12*k; base=m; }
+  ascList=collect(def.chrom?null:def.deg,lo,hi,base,true);
+  const desc=collect(def.chrom?null:(def.desc||def.deg),lo,hi,base,false).reverse();
+  steps = sc.dir==="up"? ascList.slice() : ascList.concat(desc.slice(1));
+  si=Math.max(0,Math.min(si,steps.length-1));
+  return opts;
+}
+function pickFing(midi){
+  const opts=FING[midi];
+  if(midi%12===10 && opts.length>1){
+    const chrom=SCALES[sc.type].chrom, hasB=ascList.some(n=>n.midi%12===11)||steps.some(n=>n.midi%12===11);
+    if(chrom||hasB) return {i:opts.findIndex(o=>o.name==="Side"), why: chrom? "Side B♭ is the usual choice in chromatic runs, with B♮ right next to it." : "Side B♭, because this scale also has B♮. The bis key would make you slide your index finger off and back."};
+    return {i:0, why:"Bis B♭, because this scale has no B♮. Your index finger can stay across the bis key the whole time."};
+  }
+  return {i:0, why:opts[0].tip||""};
+}
+function fingSet(midi){ return new Set(FING[midi][pickFing(midi).i].f); }
+function saveScale(){ try{ localStorage.setItem("tsf-scale", JSON.stringify({root:sc.root,keyAs:sc.keyAs,type:sc.type,dir:sc.dir,tempo:sc.tempo})); }catch(e){} }
+
+function drawScaleStaff(){
+  const s=$("sc-staff"); s.innerHTML="";
+  const gap=28, W=52+ascList.length*gap;
+  s.setAttribute("viewBox",`0 0 ${W} 130`); s.style.width=Math.round(W*0.85)+"px";
+  staffBase(s,W);
+  const curM=steps[si].midi; let curX=0;
+  ascList.forEach((sp,i)=>{
+    const x=56+i*gap, on=sp.midi===curM; if(on) curX=x;
+    const g=el("g",{class:"scnote",tabindex:0,role:"button","aria-label":`${spName(sp)}${sp.o}`},s);
+    el("rect",{x:x-gap/2,y:4,width:gap,height:122,rx:6,fill:on?"var(--brass-soft)":"transparent",stroke:"none"},g);
+    drawNote(g,x,sp.o*7+sp.l,accStr(sp.a),on?"var(--brass)":"var(--ink)",false,-15);
+    g.addEventListener("click",()=>jumpTo(sp.midi));
+    g.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); jumpTo(sp.midi);} });
+  });
+  const wrap=s.parentNode, px=curX*0.85;
+  if(px<wrap.scrollLeft+30 || px>wrap.scrollLeft+wrap.clientWidth-30) wrap.scrollLeft=px-wrap.clientWidth/2;
+}
+function renderScale(){
+  if(!steps.length) return;
+  const st=steps[si], m=st.midi, def=SCALES[sc.type], wr=writtenRoot(), cr=concertRoot();
+  showNames(m, st);
+  $("sc-root-lbl").textContent = sc.keyAs==="written" ? "Key (written)" : "Key (concert)";
+  $("sc-title").textContent = `${spName(wr)} ${def.n}`;
+  $("sc-sub").textContent = sc.keyAs==="written" ? `Sounds as concert ${concName(cr)} ${def.n}` : `Concert ${concName(ROOTS[sc.root])} ${def.n}, read as ${spName(wr)} ${def.n} on tenor`;
+  const ch=chooseRoot();
+  const note=[ch.swapped?`Shown as ${spName(wr)} ${def.n} because ${spName(ch.from)} ${def.n} would need double flats or sharps.`:"", def.note||""].filter(Boolean).join(" ");
+  $("sc-note").textContent = note; $("sc-note").classList.toggle("hidden", !note);
+  // notes in one octave
+  const rpc=pcOf(wr), r0=ascList.find(n=>n.midi%12===rpc)||ascList[0];
+  const one=ascList.filter(n=>n.midi>=r0.midi && n.midi<r0.midi+12);
+  const pcs=$("sc-pcs"); pcs.innerHTML="";
+  one.forEach(n=>{
+    const b=document.createElement("button"); b.className = n.midi%12===m%12 ? "cur" : "";
+    b.innerHTML=`<b>${spName(n)}</b><span>${SOLFL[n.l]+accStr(n.a)}</span>`;
+    b.setAttribute("aria-label",`${spName(n)}, ${SOLFL[n.l]+accStr(n.a)}`);
+    b.addEventListener("click",()=>{ const t=steps.findIndex(x=>x.midi%12===n.midi%12 && x.midi>=steps[0].midi); jumpTo(t>=0?steps[t].midi:n.midi); });
+    pcs.appendChild(b);
+  });
+  drawScaleStaff();
+  $("sc-pos").textContent = `${si+1} / ${steps.length} ${si>=ascList.length?"↓":"↑"}`;
+  $("sc-prev").disabled = si===0; $("sc-next").disabled = si===steps.length-1;
+  const pick=pickFing(m), f=FING[m][pick.i].f, fs=new Set(f);
+  let diff=null, html;
+  if(si>0){
+    const p=steps[si-1], pf=fingSet(p.midi);
+    const add=new Set(f.filter(k=>!pf.has(k))), lift=new Set([...pf].filter(k=>!fs.has(k)));
+    diff={add,lift};
+    const row=(lbl,set,cls)=>`<div class="chg"><span>${lbl}</span><div class="keylist">${set.size?[...set].map(k=>`<span class="k ${cls}">${keyLabel(k)}</span>`).join(""):'<span class="k none">nothing</span>'}</div></div>`;
+    html = `<span class="meta">From ${spName(p)}${p.o} to ${spName(st)}${st.o}</span>` + row("Press",add,"add") + row("Lift",lift,"lift")
+      + (add.size+lift.size>=5 ? '<p class="tip" style="margin:2px 0 0">Big change. Keep your fingers close to the keys so they all move together.</p>' : "");
+  } else html = '<span class="meta">Starting note. Set up every key shown in brass, then step forward.</span>';
+  $("sc-changes").innerHTML = html;
+  $("sc-hands").innerHTML = handsHTML(f);
+  $("sc-tip").textContent = pick.why; $("sc-tip").classList.toggle("hidden", !pick.why);
+  paint(fs, null, diff);
+  const inScale=new Set(steps.map(x=>x.midi));
+  document.querySelectorAll(".chip").forEach(c=>{ const cm=+c.dataset.m; c.setAttribute("aria-current", cm===m); c.classList.toggle("dim", !inScale.has(cm)); });
+  scrollChip(m);
+  renderInfo();
+  saveScale();
+}
+function refreshScale(){
+  stopScale();
+  const opts=buildSteps(), rr=$("sc-range"); rr.innerHTML="";
+  opts.forEach(o=>{ const op=document.createElement("option"); op.value=o.v; op.textContent=o.t; rr.appendChild(op); });
+  rr.value=sc.range;
+  renderScale();
+}
+function jumpTo(midi){ const i=steps.findIndex(x=>x.midi===midi); if(i>=0){ stopScale(); si=i; renderScale(); } }
+function stepScale(d){ const n=si+d; if(n>=0&&n<steps.length){ stopScale(); si=n; renderScale(); } }
+function stopScale(){ if(scPlaying!==null){ clearTimeout(scPlaying); scPlaying=null; } $("sc-play").textContent="Play scale"; }
+function playScale(){
+  if(scPlaying!==null){ stopScale(); return; }
+  let i = si>=steps.length-1 ? 0 : si;
+  const beat = 60/(+sc.tempo);
+  $("sc-play").textContent="Stop";
+  const tick=()=>{
+    si=i; renderScale(); playNote(steps[i].midi, beat*0.92); i++;
+    scPlaying = setTimeout(i<steps.length ? tick : stopScale, beat*1000);
+  };
+  scPlaying=0; tick();
+}
+function setKeyAs(v){ sc.keyAs=v; $("sc-written").setAttribute("aria-pressed", v==="written"); $("sc-concert").setAttribute("aria-pressed", v==="concert"); }
+function initScaleControls(){
+  const rs=$("sc-root"); ROOTS.forEach((r,i)=>{ const o=document.createElement("option"); o.value=i; o.textContent=spName(r); rs.appendChild(o); });
+  const ts=$("sc-type"); for(const k in SCALES){ const o=document.createElement("option"); o.value=k; o.textContent=cap(SCALES[k].n); ts.appendChild(o); }
+  if(!ROOTS[sc.root]) sc.root=0; if(!SCALES[sc.type]) sc.type="major";
+  rs.value=sc.root; ts.value=sc.type; $("sc-dir").value=sc.dir; $("sc-tempo").value=sc.tempo; setKeyAs(sc.keyAs==="concert"?"concert":"written");
+  rs.addEventListener("change",()=>{ sc.root=+rs.value; sc.range=null; si=0; refreshScale(); });
+  ts.addEventListener("change",()=>{ sc.type=ts.value; si=0; refreshScale(); });
+  $("sc-range").addEventListener("change",e=>{ sc.range=e.target.value; si=0; refreshScale(); });
+  $("sc-dir").addEventListener("change",e=>{ sc.dir=e.target.value; refreshScale(); });
+  $("sc-tempo").addEventListener("change",e=>{ sc.tempo=e.target.value; saveScale(); });
+  $("sc-written").addEventListener("click",()=>{ if(sc.keyAs!=="written"){ setKeyAs("written"); sc.range=null; si=0; refreshScale(); } });
+  $("sc-concert").addEventListener("click",()=>{ if(sc.keyAs!=="concert"){ setKeyAs("concert"); sc.range=null; si=0; refreshScale(); } });
+  $("sc-prev").addEventListener("click",()=>stepScale(-1));
+  $("sc-next").addEventListener("click",()=>stepScale(1));
+  $("sc-play").addEventListener("click",playScale);
+}
+function chipClick(m){
+  if(mode==="scale"){
+    if(steps.some(x=>x.midi===m)){ jumpTo(m); return; }
+    setMode("learn");
+  } else if(mode==="quiz") setMode("learn");
+  select(m);
+}
+
+/* ---------- interaction ---------- */
+function keyTap(k){
+  if(mode==="quiz"){
+    if(quiz.checked) return;
+    quiz.sel.has(k)?quiz.sel.delete(k):quiz.sel.add(k);
+    renderQuiz();
+  } else { focusKey = focusKey===k?null:k; mode==="scale"?renderScale():renderLearn(); }
+}
+function setMode(m){
+  if(mode==="scale" && m!=="scale") stopScale();
+  mode=m;
+  ["learn","scale","quiz"].forEach(x=>{ $("mode-"+x).setAttribute("aria-pressed", x===m); $(x+"-panel").classList.toggle("hidden", x!==m); });
+  document.querySelectorAll(".qonly").forEach(n=>n.classList.toggle("hidden", m!=="quiz"));
+  document.querySelectorAll(".sonly").forEach(n=>n.classList.toggle("hidden", m!=="scale"));
+  if(m==="quiz"){ focusKey=null; newQuestion(); }
+  else if(m==="scale"){ if(!steps.length) refreshScale(); else renderScale(); }
+  else renderLearn();
+}
+$("mode-learn").addEventListener("click",()=>setMode("learn"));
+$("mode-quiz").addEventListener("click",()=>setMode("quiz"));
+$("mode-scale").addEventListener("click",()=>setMode("scale"));
+$("prev").addEventListener("click",()=>{ const i=NOTES.indexOf(cur); if(i>0) select(NOTES[i-1]); });
+$("next").addEventListener("click",()=>{ const i=NOTES.indexOf(cur); if(i<NOTES.length-1) select(NOTES[i+1]); });
+$("check").addEventListener("click",check);
+$("clear").addEventListener("click",()=>{ if(quiz.checked) return; quiz.sel.clear(); renderQuiz(); });
+$("reveal").addEventListener("click",reveal);
+$("newq").addEventListener("click",newQuestion);
+$("pool").addEventListener("change",newQuestion);
+document.addEventListener("keydown",e=>{
+  if(mode==="quiz" || e.target.closest(".key,select,.scnote,button")) return;
+  if(e.key!=="ArrowRight" && e.key!=="ArrowLeft") return;
+  const d = e.key==="ArrowRight" ? 1 : -1;
+  if(mode==="scale") stepScale(d);
+  else { const i=NOTES.indexOf(cur)+d; if(i>=0 && i<NOTES.length) select(NOTES[i]); }
+  e.preventDefault();
+});
+
+buildStrip(); buildKeys(); initScaleControls(); renderLearn();
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{ mode==="scale"?renderScale():mode==="quiz"?renderQuiz():renderLearn(); });
+})();
+</script>
+<script>
+if("serviceWorker" in navigator && location.protocol!=="file:"){
+  addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
