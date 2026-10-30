@@ -1,5 +1,5 @@
 // Offline cache for Tenor Sax Fingerings. VERSION changes whenever the app changes.
-const VERSION = "tsf-cbdc49a74e";
+const VERSION = "tsf-0bec84de44";
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'fonts/fonts.css', 'fonts/bricolage-grotesque-latin-500-normal.woff2', 'fonts/bricolage-grotesque-latin-700-normal.woff2', 'fonts/ibm-plex-sans-latin-400-normal.woff2', 'fonts/ibm-plex-sans-latin-500-normal.woff2', 'fonts/ibm-plex-sans-latin-600-normal.woff2', 'fonts/noto-music-music-400-normal.woff2', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png'];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

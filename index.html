@@ -125,6 +125,19 @@ svg.keys{width:100%;max-width:320px;height:auto;touch-action:manipulation}
 .play svg{width:12px;height:12px;fill:currentColor}
 .play.playing{background:var(--brass);color:var(--on-brass)}
 .strip{position:relative}
+.picker{display:grid;gap:8px}
+.picker-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.picker-title{font:600 11px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.staffpick{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 8px 6px}
+.pick-hint{margin:0 4px 4px}
+#staffrows{display:grid;gap:2px}
+#staffrows svg{display:block;width:100%;height:auto;max-width:100%}
+.pnote{cursor:pointer}
+.pnote:focus{outline:none}
+.pnote:focus-visible rect{stroke:var(--brass);stroke-width:1.5}
+.pnote.dim{opacity:.28}
+.plbl{font:500 9.5px var(--body);fill:var(--muted);text-anchor:middle}
+.pnote.cur .plbl{fill:var(--ink);font-weight:700}
 .chip.dim{opacity:.3}
 .seg.small{width:max-content}
 .seg.small button{padding:6px 11px;font-size:12.5px;text-transform:none;letter-spacing:0}
@@ -174,7 +187,20 @@ footer{color:var(--muted);font-size:12px;max-width:70ch}
     </div>
   </header>
 
-  <nav class="strip" aria-label="Notes"><div class="strip-inner" id="strip"></div></nav>
+  <section class="picker">
+    <div class="picker-head">
+      <span class="picker-title">Find a note</span>
+      <div class="seg small" role="group" aria-label="Note picker view">
+        <button id="v-buttons" aria-pressed="true">Buttons</button>
+        <button id="v-staff" aria-pressed="false">Staff</button>
+      </div>
+    </div>
+    <nav class="strip" aria-label="Notes"><div class="strip-inner" id="strip"></div></nav>
+    <div class="staffpick hidden" id="staffpick" aria-label="Notes on the staff">
+      <p class="meta pick-hint">Tap the note as it looks in your music to open its fingering.</p>
+      <div id="staffrows"></div>
+    </div>
+  </section>
 
   <div class="main">
     <section class="card" aria-live="polite">
@@ -381,7 +407,8 @@ const nm = m => WRIT[m%12]+oct(m);
 function register(m){ if(m<=73) return "Low register"; if(m<=85) return "Octave key"; if(m<=90) return "Palm keys"; return "Altissimo"; }
 
 /* ---------- state ---------- */
-let cur = 72, alt = 0, mode = "learn", focusKey = null;
+let cur = 72, alt = 0, mode = "learn", focusKey = null, curSp = null, pickView = "buttons";
+try{ if(localStorage.getItem("tsf-pick")==="staff") pickView="staff"; }catch(e){}
 let quiz = {note:null, sel:new Set(), checked:false, right:0, total:0};
 try{ const s = parseInt(localStorage.getItem("tsf-note"),10); if(FING[s]) cur = s; }catch(e){}
 
@@ -501,7 +528,7 @@ function handsHTML(f){
 function renderLearn(){
   const opts = FING[cur];
   if(alt>=opts.length) alt=0;
-  showNames(cur);
+  showNames(cur, curSp);
   const tabs=$("tabs"); tabs.innerHTML="";
   opts.forEach((o,i)=>{
     const b=document.createElement("button"); b.textContent=o.name||"Standard"; b.setAttribute("aria-pressed", i===alt);
@@ -516,6 +543,7 @@ function renderLearn(){
   document.querySelectorAll(".chip").forEach(c=>{c.setAttribute("aria-current", +c.dataset.m===cur); c.classList.remove("dim");});
   $("prev").disabled = cur===NOTES[0]; $("next").disabled = cur===NOTES[NOTES.length-1];
   renderInfo();
+  renderPick();
 }
 function renderInfo(){
   const box=$("info");
@@ -526,7 +554,7 @@ function renderInfo(){
   box.innerHTML = `<strong>${K.name}</strong> <span class="meta">· ${K.finger}</span><div class="used"></div>`;
   const u=box.querySelector(".used");
   if(!used.length) u.innerHTML='<span class="meta">Not used in the standard fingerings here.</span>';
-  used.forEach(x=>{ const b=document.createElement("button"); b.textContent=x.label; b.addEventListener("click",()=>{ if(mode!=="learn") setMode("learn"); cur=x.m;alt=x.i;save();renderLearn();}); u.appendChild(b); });
+  used.forEach(x=>{ const b=document.createElement("button"); b.textContent=x.label; b.addEventListener("click",()=>{ if(mode!=="learn") setMode("learn"); cur=x.m;alt=x.i;curSp=null;save();renderLearn();}); u.appendChild(b); });
 }
 function save(){ try{localStorage.setItem("tsf-note",cur);}catch(e){} }
 function scrollChip(m){
@@ -535,7 +563,7 @@ function scrollChip(m){
   const l=chip.offsetLeft, r=l+chip.offsetWidth;
   if(l<strip.scrollLeft+8 || r>strip.scrollLeft+strip.clientWidth-8) strip.scrollLeft = l - strip.clientWidth/2 + chip.offsetWidth/2;
 }
-function select(m){ cur=m; alt=0; save(); renderLearn(); scrollChip(m); }
+function select(m){ cur=m; alt=0; curSp=null; save(); renderLearn(); scrollChip(m); }
 
 /* ---------- quiz ---------- */
 function pool(){ const v=$("pool").value; return NOTES.filter(m=> v==="low"? m<=73 : v==="nopalm"? m<=85 : m<=90); }
@@ -552,6 +580,7 @@ function renderQuiz(extra){
   paint(quiz.sel, extra);
   $("score").textContent=`${quiz.right} / ${quiz.total} correct`;
   renderInfo();
+  renderPick();
 }
 function closest(sel){
   let best=null,bd=1e9;
@@ -769,6 +798,7 @@ function renderScale(){
   document.querySelectorAll(".chip").forEach(c=>{ const cm=+c.dataset.m; c.setAttribute("aria-current", cm===m); c.classList.toggle("dim", !inScale.has(cm)); });
   scrollChip(m);
   renderInfo();
+  renderPick();
   saveScale();
 }
 function refreshScale(){
@@ -817,6 +847,73 @@ function chipClick(m){
   select(m);
 }
 
+/* ---------- staff note picker ---------- */
+const PICK=[];
+(function(){
+  // every staff position from B3 to G6, with flat, natural and sharp spellings in the horn's range
+  for(let step=3*7+6; step<=6*7+4; step++){
+    const l=step%7, o=Math.floor(step/7);
+    for(const a of [-1,0,1]){
+      if((a===1&&(l===2||l===6)) || (a===-1&&(l===3||l===0))) continue; // skip E♯, B♯, F♭, C♭
+      const midi=(o+1)*12+NAT[l]+a;
+      if(midi<58||midi>91) continue;
+      PICK.push(mk(l,a,midi));
+    }
+  }
+})();
+let pickW=0;
+function renderPick(){
+  if(pickView!=="staff") return;
+  const box=$("staffrows"), w=box.clientWidth||340, gap=26, left=54;
+  const per=Math.max(6, Math.floor((w*1.0-left-8)/gap));
+  const scaleSet = mode==="scale" ? new Set(steps.map(x=>x.midi)) : null;
+  const curM = mode==="quiz" ? null : mode==="scale" ? (steps[si]&&steps[si].midi) : cur;
+  box.innerHTML=""; pickW=w;
+  for(let i=0;i<PICK.length;i+=per){
+    const row=PICK.slice(i,i+per), W=left+row.length*gap+8;
+    const minY=Math.min(...row.map(sp=>95-(sp.o*7+sp.l-30)*5)), top=Math.min(38, minY-12);
+    const s=el("svg",{viewBox:`0 ${top} ${Math.max(W,Math.min(w,left+per*gap+8))} ${130-top}`},box);
+    s.style.maxWidth=Math.max(W,Math.min(w,left+per*gap+8))+"px";
+    staffBase(s,W);
+    row.forEach((sp,j)=>{
+      const x=left+j*gap+gap/2, on=sp.midi===curM;
+      const g=el("g",{class:"pnote"+(on?" cur":"")+(scaleSet&&!scaleSet.has(sp.midi)?" dim":""),tabindex:0,role:"button","aria-label":`${spName(sp)}${sp.o}, ${SOLFL[sp.l]+accStr(sp.a)}`},s);
+      el("rect",{x:x-gap/2+1,y:top+2,width:gap-2,height:128-top,rx:6,fill:on?"var(--brass-soft)":"transparent"},g);
+      drawNote(g,x,sp.o*7+sp.l,accStr(sp.a),on?"var(--brass)":"var(--ink)",false,-14);
+      el("text",{x:x,y:124,class:"plbl"},g).textContent=spName(sp);
+      g.addEventListener("click",()=>pickNote(sp));
+      g.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); pickNote(sp);} });
+    });
+  }
+}
+function pickNote(sp){
+  if(mode==="scale"){
+    if(steps.some(x=>x.midi===sp.midi)){ jumpTo(sp.midi); revealCard(); return; }
+    setMode("learn");
+  } else if(mode==="quiz") setMode("learn");
+  cur=sp.midi; alt=0;
+  curSp = (spName(sp)===WRIT[sp.midi%12]) ? null : sp;
+  save(); renderLearn(); scrollChip(cur); revealCard();
+}
+function revealCard(){
+  if(innerWidth<820){
+    const c=document.querySelector(".main .card"); const top=c.getBoundingClientRect().top;
+    if(top>innerHeight*0.5 || top<0) c.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
+  }
+}
+function setPickView(v){
+  pickView=v;
+  $("v-buttons").setAttribute("aria-pressed", v==="buttons");
+  $("v-staff").setAttribute("aria-pressed", v==="staff");
+  document.querySelector("nav.strip").classList.toggle("hidden", v!=="buttons");
+  $("staffpick").classList.toggle("hidden", v!=="staff");
+  try{ localStorage.setItem("tsf-pick", v); }catch(e){}
+  renderPick();
+}
+$("v-buttons").addEventListener("click",()=>setPickView("buttons"));
+$("v-staff").addEventListener("click",()=>setPickView("staff"));
+addEventListener("resize",()=>{ if(pickView==="staff" && Math.abs($("staffrows").clientWidth-pickW)>20) renderPick(); });
+
 /* ---------- interaction ---------- */
 function keyTap(k){
   if(mode==="quiz"){
@@ -846,7 +943,7 @@ $("reveal").addEventListener("click",reveal);
 $("newq").addEventListener("click",newQuestion);
 $("pool").addEventListener("change",newQuestion);
 document.addEventListener("keydown",e=>{
-  if(mode==="quiz" || e.target.closest(".key,select,.scnote,button")) return;
+  if(mode==="quiz" || e.target.closest(".key,select,.scnote,.pnote,button")) return;
   if(e.key!=="ArrowRight" && e.key!=="ArrowLeft") return;
   const d = e.key==="ArrowRight" ? 1 : -1;
   if(mode==="scale") stepScale(d);
@@ -854,7 +951,7 @@ document.addEventListener("keydown",e=>{
   e.preventDefault();
 });
 
-buildStrip(); buildKeys(); initScaleControls(); renderLearn();
+buildStrip(); buildKeys(); initScaleControls(); renderLearn(); setPickView(pickView);
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{ mode==="scale"?renderScale():mode==="quiz"?renderQuiz():renderLearn(); });
 })();
 </script>
