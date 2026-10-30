@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tenor Sax Fingerings</title>
+<title>Sax Fingerings</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -125,6 +125,7 @@ svg.keys{width:100%;max-width:320px;height:auto;touch-action:manipulation}
 .play svg{width:12px;height:12px;fill:currentColor}
 .play.playing{background:var(--brass);color:var(--on-brass)}
 .strip{position:relative}
+.hctl{display:flex;flex-wrap:wrap;gap:8px}
 .picker{display:grid;gap:8px}
 .picker-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .picker-title{font:600 11px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -177,13 +178,19 @@ footer{color:var(--muted);font-size:12px;max-width:70ch}
 <div class="wrap">
   <header>
     <div>
-      <h1>Tenor Sax Fingerings</h1>
+      <h1 id="h1">Tenor Sax Fingerings</h1>
       <p class="sub">Written pitch, B♭3 to F♯6 plus altissimo G. Tap a note, walk through a scale, or quiz yourself.</p>
+    </div>
+    <div class="hctl">
+    <div class="seg" role="group" aria-label="Instrument">
+      <button id="inst-tenor" aria-pressed="true">Tenor</button>
+      <button id="inst-alto" aria-pressed="false">Alto</button>
     </div>
     <div class="seg" role="group" aria-label="Mode">
       <button id="mode-learn" aria-pressed="true">Chart</button>
       <button id="mode-scale" aria-pressed="false">Scales</button>
       <button id="mode-quiz" aria-pressed="false">Quiz me</button>
+    </div>
     </div>
   </header>
 
@@ -288,7 +295,7 @@ footer{color:var(--muted);font-size:12px;max-width:70ch}
     </section>
   </div>
 
-  <footer>Schematic key map, not to scale. Tenor sax is a B♭ instrument and sounds a major ninth lower than written, so written C5 sounds as concert B♭3. Notation uses English letter names with Italian solfège. Play sounds the note at concert pitch, as a tenor really sounds, using a synthesised tone.</footer>
+  <footer>Schematic key map, not to scale. <span id="transnote">Tenor sax is a B♭ instrument and sounds a major ninth lower than written, so written C5 sounds as concert B♭3.</span> Notation uses English letter names with Italian solfège. Play sounds the note at concert pitch, as a tenor really sounds, using a synthesised tone.</footer>
 </div>
 
 <script>
@@ -382,10 +389,21 @@ FING[87]=[{f:["oct","palmD","palmEb"]}];
 FING[88]=[{f:["oct","palmD","palmEb","sideE"]}];
 FING[89]=[{f:["oct","palmD","palmEb","palmF","sideE"]},
           {name:"Front F",f:["oct","frontF","L1"],tip:"Rock the left index up onto the front F key while the B key stays down. Smooth from C and a common doorway to altissimo."}];
-FING[90]=[{f:["oct","palmD","palmEb","palmF","sideE","highFs"],tip:"Uses the high F♯ key, found on most modern tenors."},
+FING[90]=[{f:["oct","palmD","palmEb","palmF","sideE","highFs"],tip:"Uses the high F♯ key, found on most modern saxophones."},
           {name:"Fork",f:["oct","L1","L2","highFs"],tip:"High A fingering plus the high F♯ key. Quick and easy."},
           {name:"No F♯ key",f:["oct","frontF","L1","sideBb"],tip:"Front F fingering plus side B♭, for horns without a high F♯ key."}];
-FING[91]=[{f:["oct","L1","sideBb","highFs"],tip:"Altissimo, beyond the normal range. Needs the high F♯ key and firm air support."}];
+const G6={
+  tenor:[{f:["oct","L1","sideBb","highFs"],tip:"Altissimo, beyond the normal range. This is a stable tenor fingering; it needs the high F♯ key and firm air support."}],
+  alto:[{f:["oct","frontF","R1","highFs"],tip:"Altissimo, beyond the normal range. On alto this one uses front F plus right 1; it needs the high F♯ key and firm air support."}]
+};
+FING[91]=G6.tenor;
+const INST={
+  tenor:{name:"Tenor",T:14,dl:-1,note:"Tenor sax is a B♭ instrument and sounds a major ninth lower than written, so written C5 sounds as concert B♭3."},
+  alto:{name:"Alto",T:9,dl:-5,note:"Alto sax is an E♭ instrument and sounds a major sixth lower than written, so written C5 sounds as concert E♭4."}
+};
+let inst="tenor";
+try{ if(localStorage.getItem("tsf-inst")==="alto") inst="alto"; }catch(e){}
+const I=()=>INST[inst];
 
 const WRIT = ["C","C♯","D","E♭","E","F","F♯","G","G♯","A","B♭","B"];
 const SOLF = ["do","do♯","re","mi♭","mi","fa","fa♯","sol","sol♯","la","si♭","si"];
@@ -510,10 +528,10 @@ function showNames(m, sp){
   const others=alts.filter(a=>a[0]!==name);
   $("enh").textContent = others.length ? "Also written "+others.map(a=>`${a[0]}${oct(m)} · ${a[1]}`).join(", ") : "";
   if(sp){
-    const cl=(sp.l+6)%7, ca=norm(pcOf(sp)-2-NAT[cl]), c=mk(cl,ca,m-14);
+    const cl=(sp.l+I().dl+7)%7, ca=norm(pcOf(sp)-I().T-NAT[cl]), c=mk(cl,ca,m-I().T);
     $("concert").textContent = `Sounds as concert ${spName(c)}${c.o} · ${SOLFL[cl]+accStr(ca)}`;
   } else {
-    const c = m-14;
+    const c = m-I().T;
     $("concert").textContent = `Sounds as concert ${CONC[c%12]}${oct(c)} · ${CSOL[c%12]}`;
   }
   drawStaff(m, sp);
@@ -614,7 +632,7 @@ function playNote(m, dur){
   try{
     if(!actx){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return; actx=new AC(); }
     if(actx.state==="suspended") actx.resume();
-    const f0 = 440*Math.pow(2,(m-14-69)/12);   // concert pitch: a major ninth below written
+    const f0 = 440*Math.pow(2,(m-I().T-69)/12);   // concert pitch: tenor a major ninth, alto a major sixth below written
     dur = dur || 1.4;
     const t = actx.currentTime + 0.02;
     const at=Math.min(0.06,dur*0.15), dc=Math.min(0.25,dur*0.4), rl=Math.min(0.25,dur*0.3);
@@ -670,7 +688,7 @@ const SCALES={
 };
 const SHARPSP=[[0,0],[0,1],[1,0],[1,1],[2,0],[3,0],[3,1],[4,0],[4,1],[5,0],[5,1],[6,0]];
 const FLATSP=[[0,0],[1,-1],[1,0],[2,-1],[2,0],[3,0],[4,-1],[4,0],[5,-1],[5,0],[6,-1],[6,0]];
-const pickedWritten=()=>{ const r=ROOTS[sc.root]; return sc.keyAs==="written"? r : shift(r,1,2); };
+const pickedWritten=()=>{ const r=ROOTS[sc.root]; return sc.keyAs==="written"? r : shift(r,-I().dl,I().T); };
 /* If the chosen spelling needs double flats/sharps and the enharmonic key is simpler, use that instead */
 function chooseRoot(){
   const r=pickedWritten(), def=SCALES[sc.type];
@@ -682,7 +700,7 @@ function chooseRoot(){
   return {r, swapped:false};
 }
 const writtenRoot=()=>chooseRoot().r;
-const concertRoot=()=>shift(writtenRoot(),-1,-2);
+const concertRoot=()=>shift(writtenRoot(),I().dl,-I().T);
 const concName=r=> (Math.abs(r.a)===2 || (r.a===1&&(r.l===2||r.l===6)) || (r.a===-1&&(r.l===3||r.l===0))) ? CONC[pcOf(r)] : spName(r);
 const cap=t=>t.charAt(0).toUpperCase()+t.slice(1);
 const keyLabel=k=>/^[LR][123]$/.test(k)? (k[0]==="L"?"Left ":"Right ")+k[1] : KEYS[k].short;
@@ -762,7 +780,7 @@ function renderScale(){
   showNames(m, st);
   $("sc-root-lbl").textContent = sc.keyAs==="written" ? "Key (written)" : "Key (concert)";
   $("sc-title").textContent = `${spName(wr)} ${def.n}`;
-  $("sc-sub").textContent = sc.keyAs==="written" ? `Sounds as concert ${concName(cr)} ${def.n}` : `Concert ${concName(ROOTS[sc.root])} ${def.n}, read as ${spName(wr)} ${def.n} on tenor`;
+  $("sc-sub").textContent = sc.keyAs==="written" ? `Sounds as concert ${concName(cr)} ${def.n}` : `Concert ${concName(ROOTS[sc.root])} ${def.n}, read as ${spName(wr)} ${def.n} on ${I().name.toLowerCase()} sax`;
   const ch=chooseRoot();
   const note=[ch.swapped?`Shown as ${spName(wr)} ${def.n} because ${spName(ch.from)} ${def.n} would need double flats or sharps.`:"", def.note||""].filter(Boolean).join(" ");
   $("sc-note").textContent = note; $("sc-note").classList.toggle("hidden", !note);
@@ -910,6 +928,20 @@ function setPickView(v){
   try{ localStorage.setItem("tsf-pick", v); }catch(e){}
   renderPick();
 }
+function setInst(v, init){
+  inst=v; FING[91]=G6[v];
+  $("inst-tenor").setAttribute("aria-pressed", v==="tenor");
+  $("inst-alto").setAttribute("aria-pressed", v==="alto");
+  $("h1").textContent = `${I().name} Sax Fingerings`;
+  $("transnote").textContent = I().note;
+  try{ localStorage.setItem("tsf-inst", v); }catch(e){}
+  if(init) return;
+  if(mode==="scale"){ if(sc.keyAs==="concert"){ sc.range=null; si=0; } refreshScale(); }
+  else if(mode==="quiz") renderQuiz();
+  else { if(steps.length && sc.keyAs==="concert"){ sc.range=null; si=0; steps=[]; } renderLearn(); }
+}
+$("inst-tenor").addEventListener("click",()=>{ if(inst!=="tenor") setInst("tenor"); });
+$("inst-alto").addEventListener("click",()=>{ if(inst!=="alto") setInst("alto"); });
 $("v-buttons").addEventListener("click",()=>setPickView("buttons"));
 $("v-staff").addEventListener("click",()=>setPickView("staff"));
 addEventListener("resize",()=>{ if(pickView==="staff" && Math.abs($("staffrows").clientWidth-pickW)>20) renderPick(); });
@@ -951,7 +983,7 @@ document.addEventListener("keydown",e=>{
   e.preventDefault();
 });
 
-buildStrip(); buildKeys(); initScaleControls(); renderLearn(); setPickView(pickView);
+setInst(inst, true); buildStrip(); buildKeys(); initScaleControls(); renderLearn(); setPickView(pickView);
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{ mode==="scale"?renderScale():mode==="quiz"?renderQuiz():renderLearn(); });
 })();
 </script>

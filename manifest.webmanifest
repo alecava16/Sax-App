@@ -1,7 +1,7 @@
 {
-  "name": "Tenor Sax Fingerings",
+  "name": "Sax Fingerings",
   "short_name": "Sax Fingers",
-  "description": "Tenor saxophone fingering chart with scales, sound and a quiz.",
+  "description": "Tenor and alto saxophone fingering chart with scales, sound and a quiz.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
