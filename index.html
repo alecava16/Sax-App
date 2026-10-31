@@ -126,6 +126,12 @@ svg.keys{width:100%;max-width:320px;height:auto;touch-action:manipulation}
 .play.playing{background:var(--brass);color:var(--on-brass)}
 .strip{position:relative}
 .hctl{display:flex;flex-wrap:wrap;gap:8px}
+.rel{display:grid;gap:6px;margin-top:6px}
+.relrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.relrow > span{font-size:12px;font-weight:600;color:var(--muted);min-width:104px}
+.relrow button{font:500 13px var(--body);border:1px solid var(--line);background:transparent;color:var(--ink);padding:5px 11px;border-radius:999px;cursor:pointer}
+.relrow button:hover{border-color:var(--brass);background:var(--brass-soft)}
+.sig{font-size:13.5px}
 .picker{display:grid;gap:8px}
 .picker-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .picker-title{font:600 11px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -178,7 +184,7 @@ footer{color:var(--muted);font-size:12px;max-width:70ch}
 <div class="wrap">
   <header>
     <div>
-      <h1 id="h1">Tenor Sax Fingerings</h1>
+      <h1 id="h1">Sax Fingerings</h1>
       <p class="sub">Written pitch, B♭3 to F♯6 plus altissimo G. Tap a note, walk through a scale, or quiz yourself.</p>
     </div>
     <div class="hctl">
@@ -247,6 +253,7 @@ footer{color:var(--muted);font-size:12px;max-width:70ch}
           <div class="scale-title" id="sc-title"></div>
           <div class="meta" id="sc-sub"></div>
           <div class="pcs" id="sc-pcs"></div>
+          <div class="rel" id="sc-rel"></div>
           <p class="tip" id="sc-note" style="margin:2px 0 0"></p>
         </div>
         <div class="staffwrap"><svg id="sc-staff" aria-label="Scale on the staff"></svg></div>
@@ -671,7 +678,9 @@ $("play").addEventListener("click",()=>playNote(mode==="quiz"?quiz.note : mode==
 let sc={root:0,keyAs:"written",type:"major",dir:"updown",tempo:"90",range:null};
 try{ Object.assign(sc, JSON.parse(localStorage.getItem("tsf-scale")||"{}")); sc.range=null; }catch(e){}
 let steps=[], ascList=[], si=0, scPlaying=null;
-const ROOTS=[[0,0],[0,1],[1,-1],[1,0],[2,-1],[2,0],[3,0],[3,1],[4,-1],[4,0],[5,-1],[5,0],[6,-1],[6,0]].map(([l,a])=>({l,a}));
+// first 14 keep their old order (saved settings use the index); D♯, G♯, A♯ and C♭ added for relative keys
+const ROOTS=[[0,0],[0,1],[1,-1],[1,0],[2,-1],[2,0],[3,0],[3,1],[4,-1],[4,0],[5,-1],[5,0],[6,-1],[6,0],[1,1],[4,1],[5,1],[0,-1]].map(([l,a])=>({l,a}));
+const ROOT_ORDER=[0,1,2,3,14,4,5,6,7,8,9,15,10,11,16,12,13,17];
 const shift=(r,dl,ds)=>{ const l=(r.l+dl+7)%7; return {l,a:norm(pcOf(r)+ds-NAT[l])}; };
 const MAJ=[[0,0],[1,2],[2,4],[3,5],[4,7],[5,9],[6,11]], NMIN=[[0,0],[1,2],[2,3],[3,5],[4,7],[5,8],[6,10]];
 const SCALES={
@@ -754,6 +763,41 @@ function pickFing(midi){
   }
   return {i:0, why:opts[0].tip||""};
 }
+const MINORS=["natmin","harmin","melmin"];
+function relatives(type, wr){
+  // returns {label, items:[{type, root}]}
+  if(type==="major") return {label:"Relative minor", items:MINORS.map(t=>({type:t, root:shift(wr,-2,-3)}))};
+  if(MINORS.includes(type)) return {label:"Relative major", items:[{type:"major", root:shift(wr,2,3)}]};
+  if(type==="majpent") return {label:"Relative minor", items:[{type:"minpent", root:shift(wr,-2,-3)}]};
+  if(type==="minpent") return {label:"Relative major", items:[{type:"majpent", root:shift(wr,2,3)}]};
+  if(type==="dorian") return {label:"Parent major", items:[{type:"major", root:shift(wr,-1,-2)}]};
+  if(type==="mixo") return {label:"Parent major", items:[{type:"major", root:shift(wr,-4,-7)}]};
+  return null;
+}
+function parentMajor(type, wr){
+  if(type==="major"||type==="majpent") return wr;
+  if(MINORS.includes(type)||type==="minpent"||type==="blues") return shift(wr,2,3);
+  if(type==="dorian") return shift(wr,-1,-2);
+  if(type==="mixo") return shift(wr,-4,-7);
+  return null;
+}
+function keySignature(type, wr){
+  const pm=parentMajor(type, wr); if(!pm) return "";
+  const acc={}; MAJ.forEach(([d,s2])=>{ const l=(pm.l+d)%7; acc[l]=norm(pcOf(pm)+s2-NAT[l]); });
+  const sharps=[3,0,4,1,5,2,6].filter(l=>acc[l]>0), flats=[6,2,5,1,4,0,3].filter(l=>acc[l]<0);
+  const list=(sharps.length?sharps:flats).map(l=>LETTERS[l]+accStr(acc[l]));
+  const n=sharps.length?sharps.reduce((t,l)=>t+acc[l],0):flats.reduce((t,l)=>t-acc[l],0);
+  if(!list.length) return "Key signature: no sharps or flats";
+  return `Key signature: ${n}${sharps.length?"♯":"♭"} (${list.join(" ")})`;
+}
+function openScale(type, root){
+  const target = sc.keyAs==="written" ? root : shift(root, I().dl, -I().T);
+  let idx = ROOTS.findIndex(r=>r.l===target.l && r.a===target.a);
+  if(idx<0) idx = ROOTS.findIndex(r=>pcOf(r)===pcOf(target));
+  sc.type=type; sc.root=idx; sc.range=null; si=0;
+  $("sc-type").value=type; $("sc-root").value=idx;
+  refreshScale();
+}
 function fingSet(midi){ return new Set(FING[midi][pickFing(midi).i].f); }
 function saveScale(){ try{ localStorage.setItem("tsf-scale", JSON.stringify({root:sc.root,keyAs:sc.keyAs,type:sc.type,dir:sc.dir,tempo:sc.tempo})); }catch(e){} }
 
@@ -795,6 +839,23 @@ function renderScale(){
     b.addEventListener("click",()=>{ const t=steps.findIndex(x=>x.midi%12===n.midi%12 && x.midi>=steps[0].midi); jumpTo(t>=0?steps[t].midi:n.midi); });
     pcs.appendChild(b);
   });
+  // relative keys and key signature
+  const relBox=$("sc-rel"); relBox.innerHTML="";
+  const sig=keySignature(sc.type, wr);
+  if(sig){ const d=document.createElement("div"); d.className="sig"; d.textContent=sig + (sc.type==="blues"?" (same as the natural minor)":""); relBox.appendChild(d); }
+  const rel=relatives(sc.type, wr);
+  if(rel){
+    const row=document.createElement("div"); row.className="relrow";
+    row.innerHTML=`<span>${rel.label}</span>`;
+    rel.items.forEach(it=>{
+      const b=document.createElement("button");
+      b.textContent = rel.items.length>1 ? `${spName(it.root)} ${SCALES[it.type].n.replace(" minor","")}` : `${spName(it.root)} ${SCALES[it.type].n}`;
+      b.setAttribute("aria-label",`Open ${spName(it.root)} ${SCALES[it.type].n}`);
+      b.addEventListener("click",()=>openScale(it.type, it.root));
+      row.appendChild(b);
+    });
+    relBox.appendChild(row);
+  }
   drawScaleStaff();
   $("sc-pos").textContent = `${si+1} / ${steps.length} ${si>=ascList.length?"↓":"↑"}`;
   $("sc-prev").disabled = si===0; $("sc-next").disabled = si===steps.length-1;
@@ -842,7 +903,7 @@ function playScale(){
 }
 function setKeyAs(v){ sc.keyAs=v; $("sc-written").setAttribute("aria-pressed", v==="written"); $("sc-concert").setAttribute("aria-pressed", v==="concert"); }
 function initScaleControls(){
-  const rs=$("sc-root"); ROOTS.forEach((r,i)=>{ const o=document.createElement("option"); o.value=i; o.textContent=spName(r); rs.appendChild(o); });
+  const rs=$("sc-root"); ROOT_ORDER.forEach(i=>{ const r=ROOTS[i], o=document.createElement("option"); o.value=i; o.textContent=spName(r); rs.appendChild(o); });
   const ts=$("sc-type"); for(const k in SCALES){ const o=document.createElement("option"); o.value=k; o.textContent=cap(SCALES[k].n); ts.appendChild(o); }
   if(!ROOTS[sc.root]) sc.root=0; if(!SCALES[sc.type]) sc.type="major";
   rs.value=sc.root; ts.value=sc.type; $("sc-dir").value=sc.dir; $("sc-tempo").value=sc.tempo; setKeyAs(sc.keyAs==="concert"?"concert":"written");
@@ -932,7 +993,6 @@ function setInst(v, init){
   inst=v; FING[91]=G6[v];
   $("inst-tenor").setAttribute("aria-pressed", v==="tenor");
   $("inst-alto").setAttribute("aria-pressed", v==="alto");
-  $("h1").textContent = `${I().name} Sax Fingerings`;
   $("transnote").textContent = I().note;
   try{ localStorage.setItem("tsf-inst", v); }catch(e){}
   if(init) return;
